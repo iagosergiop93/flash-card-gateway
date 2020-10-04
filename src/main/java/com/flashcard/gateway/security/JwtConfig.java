@@ -26,6 +26,13 @@ public class JwtConfig {
 	
 	public Key SIGNING_KEY;
 	
+	
+	public void initJwtConfig() {
+		System.out.println("Creating JWT Key: " + secret);
+		byte[] secretBytes = DatatypeConverter.parseBase64Binary(secret);
+		this.SIGNING_KEY = new SecretKeySpec(secretBytes, this.signatureAlg.getJcaName());
+	}
+	
 	private JwtDecoder createDecoder() {
 		JwtDecoder decoder = new JwtDecoder(this);
 		return decoder;
@@ -34,14 +41,6 @@ public class JwtConfig {
 	private JwtGenerator createGenerator() {
 		JwtGenerator gen = new JwtGenerator(this);
 		return gen;
-	}
-	
-	public void setKey() {
-		if(this.SIGNING_KEY == null) {
-			System.out.println("Creating JWT Key");
-			byte[] secretBytes = DatatypeConverter.parseBase64Binary(secret);
-			this.SIGNING_KEY = new SecretKeySpec(secretBytes, this.signatureAlg.getJcaName());
-		}
 	}
 	
 	public PrincipalEncoder createPrincipalEncoder() {

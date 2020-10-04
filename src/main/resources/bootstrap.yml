@@ -2,8 +2,28 @@ server:
   port: 8080
 
 spring:
+  profiles:
+    active: local
+
+---
+spring:
+  profiles: local
   application:
     name: gateway-service
   cloud:
     config:
       uri: http://localhost:8888
+
+jwt:
+  header: "localHeader"
+  secret: "localsecret"
+
+---
+spring:
+  profiles: stage
+  application:
+    name: gateway-service
+  cloud:
+    config:
+      uri: http://localhost:8888
+

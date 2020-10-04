@@ -1,6 +1,10 @@
 package com.flashcard.gateway.entities;
 
-public class Principal {
+import java.io.Serializable;
+
+public class Principal implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
 	
 	private long id;
 	private String username;
