@@ -2,6 +2,7 @@ package com.flashcard.gateway.filters;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,7 @@ public class TestAuthPreFilter {
 		MockHttpServletResponse res = mvc.perform(get("/test")
 										.header("Access-Control-Request-Method", "GET")
 									    .header("Origin", "http://www.someurl.com"))
+										.andDo(print())
 										.andReturn().getResponse();
 		assertEquals("*", res.getHeader("Access-Control-Allow-Origin"));
 	}

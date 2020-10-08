@@ -34,16 +34,4 @@ public class JwtConfigTest {
 		});
 	}
 	
-	@Test
-	public void testCreateEncoder() throws Exception {
-		assertDoesNotThrow(() -> {
-			jwtConfig.createPrincipalEncoder();
-		});
-	}
-	
-	@Test
-	public void testEncoderNotNull() throws Exception {
-		assertNotNull(jwtConfig.createPrincipalEncoder());
-	}
-	
 }

@@ -1,26 +1,26 @@
 package com.flashcard.gateway.filter;
 
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.POST_TYPE;
+
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flashcard.gateway.entities.Principal;
 import com.flashcard.gateway.security.PrincipalEncoder;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
 
-@Component
 public class AuthPostFilter extends ZuulFilter {
 	
+	private Logger logger = LoggerFactory.getLogger(AuthPostFilter.class);
 	private PrincipalEncoder principalEnc;
 	
-	@Autowired
 	public AuthPostFilter(PrincipalEncoder pe) {
 		this.principalEnc = pe;
 	}
@@ -31,44 +31,58 @@ public class AuthPostFilter extends ZuulFilter {
 		HttpServletRequest req = ctx.getRequest();
 		String uri = req.getRequestURI();
 		
-		return uri.matches(".*/login.*|.*/auth.*");
+		logger.info("URI: " + uri);
+		
+		return uri.matches(".*/users/login.*|.*/users/auth.*|.*/users/user.*");
 	}
 
 	@Override
 	public Object run() throws ZuulException {
 		
-		HttpServletResponse res = RequestContext.getCurrentContext().getResponse();
-		InputStream is = RequestContext.getCurrentContext().getResponseDataStream();
-		Principal principal = readPrincipalInputStream(is);
-		if(principal != null) {
-			String token = principalEnc.encodePrincipal(principal);
-			res.addHeader("authorization", token);
+		RequestContext context = RequestContext.getCurrentContext();
+	    ObjectMapper mapper = new ObjectMapper();
+	    	
+	    Principal principal = readPrincipalInputStream(context, mapper);
+    	addToken(context, principal);
+    	try {
+    		context.setResponseBody(mapper.writeValueAsString(principal));
+    	} catch (Exception e) {
+			logger.debug(e.getMessage());
 		}
-		
+	    
 		return null;
 	}
 
 	@Override
 	public String filterType() {
-		return "post";
+		return POST_TYPE;
 	}
 
 	@Override
 	public int filterOrder() {
-		return 1;
+		return 10;
 	}
 	
-	public Principal readPrincipalInputStream(InputStream is) {
+	public Principal readPrincipalInputStream(RequestContext context, ObjectMapper mapper) {
 		Principal principal = null;
 		
-		try {
-			ObjectInputStream ois = new ObjectInputStream(is);
-			principal = (Principal) ois.readObject();
+	    try (final InputStream responseDataStream = context.getResponseDataStream()) {	
+	    	principal = mapper.readValue(responseDataStream, Principal.class);
 		} catch(Exception e) {
 			System.out.println(e.getCause());
 		}
 		
 		return principal;
+	}
+	
+	public void addToken(RequestContext context, Principal principal) {
+		String token = "";
+    	logger.info("Principal value: " + principal.toString());
+    	
+    	if(principal != null) {
+    		token = principalEnc.encodePrincipal(principal);
+    		context.addZuulResponseHeader("authorization", token);
+    	}
 	}
 
 }

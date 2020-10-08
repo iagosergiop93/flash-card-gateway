@@ -5,6 +5,8 @@ import java.security.Key;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,6 +14,8 @@ import io.jsonwebtoken.SignatureAlgorithm;
 
 @Configuration
 public class JwtConfig {
+	
+	private Logger logger = LoggerFactory.getLogger(JwtConfig.class);
 	
 	@Value("${jwt.secret}")
 	private String secret;
@@ -26,28 +30,11 @@ public class JwtConfig {
 	
 	public Key SIGNING_KEY;
 	
-	
 	public void initJwtConfig() {
-		System.out.println("Creating JWT Key: " + secret);
+		logger.info("Creating JWT Key: " + secret);
 		byte[] secretBytes = DatatypeConverter.parseBase64Binary(secret);
 		this.SIGNING_KEY = new SecretKeySpec(secretBytes, this.signatureAlg.getJcaName());
-	}
-	
-	private JwtDecoder createDecoder() {
-		JwtDecoder decoder = new JwtDecoder(this);
-		return decoder;
-	}
-	
-	private JwtGenerator createGenerator() {
-		JwtGenerator gen = new JwtGenerator(this);
-		return gen;
-	}
-	
-	public PrincipalEncoder createPrincipalEncoder() {
-		JwtGenerator gen = createGenerator();
-		JwtDecoder dec = createDecoder();
-		
-		return new PrincipalEncoder(gen, dec);
+		logger.info(SIGNING_KEY.toString());
 	}
 	
 }

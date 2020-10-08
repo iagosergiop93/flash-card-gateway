@@ -15,7 +15,6 @@ public class JwtGenerator {
 		this.jwtConfig = jwtConfig;
 	}
 
-	
 	public String createJwt(Principal subject) {
 		
 		long nowMillis = System.currentTimeMillis();
@@ -26,8 +25,8 @@ public class JwtGenerator {
 				.setIssuer("iagodev")
 				.claim("role", subject.getRole().getName())
 				.setIssuedAt(new Date(nowMillis))
-				.setExpiration(new Date(nowMillis + jwtConfig.EXPIRATION))
-				.signWith(jwtConfig.signatureAlg, jwtConfig.SIGNING_KEY);
+				.setExpiration(new Date(nowMillis + this.jwtConfig.EXPIRATION))
+				.signWith(this.jwtConfig.signatureAlg, this.jwtConfig.SIGNING_KEY);
 		
 		return jwtConfig.PREFIX + builder.compact();
 	}
